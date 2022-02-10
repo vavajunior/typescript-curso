@@ -13,4 +13,13 @@ export class Negociacao {
     get total() {
         return this.quantidade * this.valor;
     }
+
+    public static criaNegociacao(dataInput: Date, quantidadeInput: number, valorInput: number): Negociacao {
+        const itemNovo = new Negociacao(
+            dataInput,
+            quantidadeInput,
+            valorInput
+        );
+        return itemNovo;
+    }
 }

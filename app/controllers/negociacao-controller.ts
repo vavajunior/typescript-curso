@@ -13,14 +13,18 @@ export class NegociacaoController {
     private mensagemView = new MensagemView("#mensagemView");
 
     constructor() {
-        this.inputData = document.querySelector('#data');
-        this.inputQuantidade = document.querySelector('#quantidade');
-        this.inputValor = document.querySelector('#valor');
+        this.inputData = <HTMLInputElement>document.querySelector('#data');
+        this.inputQuantidade = document.querySelector('#quantidade') as HTMLInputElement;
+        this.inputValor = document.querySelector('#valor') as HTMLInputElement;
         this.negociacoesView.update(this.listaNegociacoes);
     }
 
     public adiciona(): void {
-        const novoItem = this.criaNegociacao();
+        const novoItem = Negociacao.criaNegociacao(
+            this.inputData.valueAsDate as Date,
+            this.inputQuantidade.valueAsNumber,
+            this.inputValor.valueAsNumber
+        );
         if (this.ehDiaUtil(novoItem.data)) {
             this.listaNegociacoes.adiciona(novoItem);
             console.log(this.listaNegociacoes.lista());
@@ -32,15 +36,6 @@ export class NegociacaoController {
         else {
             this.mensagemView.update("Data não é dia útil!");
         }
-    }
-
-    private criaNegociacao(): Negociacao {
-        const itemNovo = new Negociacao(
-            this.inputData.valueAsDate,
-            this.inputQuantidade.valueAsNumber,
-            this.inputValor.valueAsNumber
-        );
-        return itemNovo;
     }
 
     private ehDiaUtil(data: Date): boolean {

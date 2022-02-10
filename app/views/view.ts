@@ -2,7 +2,12 @@ export abstract class View<T>{
     protected elemento: HTMLElement;
 
     constructor(seletor: string) {
-        this.elemento = document.querySelector(seletor);
+        const elemento = document.querySelector(seletor);
+        if (elemento) {
+            this.elemento = elemento as HTMLElement;
+        } else {
+            throw Error(`Seletor ${seletor} não foi encontrado na página.`);
+        }
     }
 
     public update(model: T): void {
