@@ -1,24 +1,31 @@
+import { domInjector } from "../decorators/dom-injector.js";
+import { logarTempoExecucao } from "../decorators/logar-tempo-execucao.js";
 import { DiasDaSemana } from "../enums/dias-da-semana.js";
 import { Negociacao } from "../models/negociacao.js";
 import { Negociacoes } from "../models/negociacoes.js";
+import { NegociacaoAPI } from "../services/negociacao-api.js";
+import { imprimir } from "../utils/imprimir.js";
 import { MensagemView } from "../views/mensagem-view.js";
 import { NegociacoesView } from "../views/negociacoes-view.js";
 
 export class NegociacaoController {
+    @domInjector('#data')
     private inputData: HTMLInputElement;
+    @domInjector('#quantidade')
     private inputQuantidade: HTMLInputElement;
+    @domInjector('#valor')
     private inputValor: HTMLInputElement;
+
     private listaNegociacoes = new Negociacoes();
     private negociacoesView = new NegociacoesView('#negociacoesView');
     private mensagemView = new MensagemView("#mensagemView");
+    private serviceAPI = new NegociacaoAPI();
 
     constructor() {
-        this.inputData = <HTMLInputElement>document.querySelector('#data');
-        this.inputQuantidade = document.querySelector('#quantidade') as HTMLInputElement;
-        this.inputValor = document.querySelector('#valor') as HTMLInputElement;
         this.negociacoesView.update(this.listaNegociacoes);
     }
 
+    @logarTempoExecucao()
     public adiciona(): void {
         const novoItem = Negociacao.criaNegociacao(
             this.inputData.valueAsDate as Date,
@@ -27,11 +34,12 @@ export class NegociacaoController {
         );
         if (this.ehDiaUtil(novoItem.data)) {
             this.listaNegociacoes.adiciona(novoItem);
-            console.log(this.listaNegociacoes.lista());
+            const data = new Date();
+            imprimir(novoItem, this.listaNegociacoes);
 
             this.negociacoesView.update(this.listaNegociacoes);
             this.mensagemView.update("Negociação adicionada com sucesso!");
-            this.limpaFormulario();
+            this.limpaFormulario();                    
         }
         else {
             this.mensagemView.update("Data não é dia útil!");
@@ -47,5 +55,16 @@ export class NegociacaoController {
         this.inputQuantidade.value = '';
         this.inputValor.value = '';
         this.inputData.focus();
+    }
+
+    public importaDados(): void {
+        this.serviceAPI
+            .buscarNegociacoesHoje()
+            .then(lista => {
+                for (let item of lista) {
+                    this.listaNegociacoes.adiciona(item);
+                }
+                this.negociacoesView.update(this.listaNegociacoes);
+            });
     }
 }
